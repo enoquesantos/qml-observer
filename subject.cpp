@@ -1,8 +1,6 @@
 #include "subject.h"
 
 #include <QMapIterator>
-#include <QDebug>
-#include <QTimer>
 
 Subject::Subject(QObject *parent) : QObject(parent)
 {
@@ -29,20 +27,20 @@ void Subject::attach(Observer *observer, const QString &event)
     if (attacheds.count() > 0) {
         int index = attacheds.indexOf(observer);
         if (index > -1)
-            return;
+            attacheds.removeAt(index);
     }
     observer->setSubject(this);
     attacheds.append(observer);
     m_attacheds.insert(event, attacheds);
 }
 
-void Subject::attach(Observer *observer, const QVariantList &events)
+void Subject::attach(Observer *observer, const QStringList &events)
 {
-    foreach (const QVariant &qv, events)
-        attach(observer, qv.toString());
+    foreach (const QString &event, events)
+        attach(observer, event);
 }
 
-void Subject::dettach(Observer *observer, const QString &event)
+void Subject::detach(Observer *observer, const QString &event)
 {
     QVector<Observer *> attacheds = m_attacheds.value(event);
     if (attacheds.count() > 0) {
@@ -54,15 +52,20 @@ void Subject::dettach(Observer *observer, const QString &event)
     attacheds = m_attacheds.value(event);
 }
 
-void Subject::notify(const QString &event, const QVariant &args, QQuickItem *sender)
+void Subject::detach(Observer *observer, const QStringList &events)
+{
+    foreach (const QString &event, events)
+        detach(observer, event);
+}
+
+void Subject::notify(const QString &event, const QVariant &data, QObject *sender)
 {
     QVector<Observer *> observers = m_attacheds.value(event);
     int size = observers.size();
     for (int i = 0; i < size; ++i) {
         Observer *obs = observers.at(i);
         if (obs && !obs->objectName().isEmpty()) {
-            // qDebug() << "create a worker in current thread: " << QThread::currentThread();
-            Private::Worker *worker = new Private::Worker(obs, event, args, sender, this);
+            Private::Worker *worker = new Private::Worker(obs, event, data, sender, this);
             connect(worker, &QThread::finished, worker, &QObject::deleteLater);
             worker->start();
         }
