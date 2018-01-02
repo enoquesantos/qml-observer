@@ -3,14 +3,14 @@ import QtQuick 2.8
 import Observer 1.0
 
 Item {
-    id: newObserver
-
-    Component.onCompleted: Subject.attach(observer, observer.events)
+    id: item
+    property var eventsList: []
 
     Observer {
         id: observer
-        events: ["newEventObserver"]
+        events: eventsList
         objectName: "newObserverItem"
-        onUpdated: console.log("newObserverItem notify from event: ", events[0])
+        onUpdated: console.log("%1 notify from event: %2".arg(item.objectName).arg(events[0]))
+        onEventsChanged: if (observer.events) Subject.attach(observer, observer.events)
     }
 }

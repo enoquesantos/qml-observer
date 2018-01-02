@@ -18,39 +18,53 @@ ApplicationWindow {
         }
     }
 
+    QtObject {
+        id: qtobject
+        property var eventsList: ["event_1", "event_2", "event_3", "event_4", "event_5"]
+    }
+
     Observer {
         id: observer
-        events: ["ItemReady"]
+        events: qtobject.eventsList[0]
         objectName: "observerItem"
         onUpdated: console.log("observer notify from event: ", events[0])
 
         Component.onCompleted: Subject.attach(observer, observer.events)
     }
 
-    MyItem { }
+    MyItem { objectName: "MyItem.1"; eventsList: qtobject.eventsList[0] }
+    MyItem { objectName: "MyItem.2"; eventsList: qtobject.eventsList[0] }
+    MyItem { objectName: "MyItem.3"; eventsList: qtobject.eventsList[1] }
+    MyItem { objectName: "MyItem.4"; eventsList: qtobject.eventsList[1] }
+    MyItem { objectName: "MyItem.5"; eventsList: qtobject.eventsList[2] }
+    MyItem { objectName: "MyItem.6"; eventsList: qtobject.eventsList[2] }
+    MyItem { objectName: "MyItem.7"; eventsList: qtobject.eventsList[3] }
+    MyItem { objectName: "MyItem.8"; eventsList: qtobject.eventsList[3] }
+    MyItem { objectName: "MyItem.9"; eventsList: qtobject.eventsList[4] }
+    MyItem { objectName: "MyItem.10"; eventsList: qtobject.eventsList[4] }
 
     Column {
         spacing: 15
+        width: parent.width
         anchors.horizontalCenter: parent.horizontalCenter
 
         Item {
-            width: 200; height: 50
+            width: parent.width; height: 50
         }
 
         Label {
-            text: "Enter the event name"
+            anchors.horizontalCenter: parent.horizontalCenter
+            font.pointSize: 18
+            text: qsTr("Select a event to notify observers")
         }
 
-        TextField {
-            id: textField
+        ComboBox {
+            id: comboBox
+            currentIndex: -1
+            model: qtobject.eventsList
+            width: parent.width * 0.80; height: 50
             anchors.horizontalCenter: parent.horizontalCenter
-        }
-
-        Button {
-            id: button
-            text: "Notificar"
-            anchors.horizontalCenter: parent.horizontalCenter
-            onClicked: Subject.notify(textField.text, {"id": "1"}, button)
+            onActivated: Subject.notify(comboBox.currentText, {"id": "1"}, comboBox)
         }
     }
 }
